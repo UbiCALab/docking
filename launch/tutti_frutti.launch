@@ -1,0 +1,40 @@
+<?xml version="0.0"?>
+<launch>
+
+<!--  <arg name="robot_namespace"/>-->
+  <arg name="simulation"/>
+  <!-- Bug fix: Reload footprint -->
+  <!--rosparam command="delete" ns="move_base" /-->
+
+  <!-- Run move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+	  <!-- <remap from="cmd_vel" to="/cmd_vel"/> -->
+    <!--<param name="local_costmap/global_frame" value="$(arg robot_namespace)_tf/odom" />--> <!-- TODO: CHECK IF THIS SHOULD BE MAP /-->
+    <!--<param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint" />
+    <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint" />-->
+
+<!--    <param name="tf_prefix" value="$(arg robot_namespace)_tf"/>-->
+    <remap from="odom" to="odom"/>
+<!--    <remap from="$(arg robot_namespace)_tf/scan" to="scan"/>-->
+    <remap from="cmd_vel" to="cmd_vel_mux/input/navi"/>
+    <remap from="camera/depth/points" to="camera/depth/points"/>
+    <remap from="scan" to="scan"/>
+
+    <rosparam file="$(find sergi_navigation)/param/move_base_params.yaml" command="load" />
+    <rosparam file="$(find sergi_navigation)/param/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find sergi_navigation)/param/navfn_global_planner_params.yaml" command="load" />
+    <rosparam file="$(find sergi_navigation)/param/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find sergi_navigation)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find sergi_navigation)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find sergi_navigation)/param/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find sergi_navigation)/param/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find sergi_navigation)/param/recovery_params.yaml" command="load" />
+    <!--param name="DWAPlannerROS/global_frame_id" value="$(arg robot_namespace)_tf/odom"/>
+    <param name="global_costmap/global_frame" value="$(arg robot_namespace)_tf/odom"/>
+    <param name="global_costmap/obstacle_layer/cam/sensor_frame" value="$(arg robot_namespace)_tf/camera_depth_frame"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint"/>
+    <param name="local_costmap/global_frame" value="$(arg robot_namespace)_tf/odom"/>
+    <param name="local_costmap/obstacle_layer/cam/sensor_frame" value="$(arg robot_namespace)_tf/camera_depth_frame"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint"/-->
+  </node>
+</launch>

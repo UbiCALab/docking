@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="/use_sim_time" value="true"/>
+<!--  <arg name="robot_ns"          default="R2D2"/>-->
+<!--  <arg name="tf_prefix"         default="R2D2TF"/>-->
+
+<!--  <group ns="$(arg robot_ns)">-->
+     <include file="$(find sergi)/launch/tutti_frutti.launch" >
+<!--       <param name="tf_prefix" value="$(arg tf_prefix)"/>-->
+<!--       <arg name="robot_namespace"  value="$(arg robot_ns)" />-->
+       <arg name="simulation" value="false"/>
+     </include>
+<!--  </group>-->
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_to_odom)" args="0 0 0 0 0 0 /map /odom 50"/> <!--$(arg tf_prefix)-->
+
+</launch>
