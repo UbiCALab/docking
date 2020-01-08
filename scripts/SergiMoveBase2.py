@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, OccupancyGrid
 import rospy
 import tf
 from geometry_msgs.msg import Vector3Stamped, PointStamped, PoseStamped
@@ -19,6 +19,8 @@ class SergiMoveBase:
         self.listener = tf.TransformListener()
         rospy.Subscriber('odom', Odometry, self.odometry_cb)
         self.odom_msg = Odometry()
+        rospy.Subscriber('move_base/local_costmap/costmap', OccupancyGrid, self.costmap_cb)
+        self.costmap_msg = OccupancyGrid()
         self.a1 = Vector3Stamped()
         self.a2 = Vector3Stamped()
         self.a3 = Vector3Stamped()
@@ -111,15 +113,21 @@ class SergiMoveBase:
                          ((self.g.point.y-self.odom_msg.pose.pose.position.y)**2)) < 0.2
         # return np.absolute(np.subtract(self.g.point, self.odom_msg.pose.pose.position)) < 0.5
 
+    def costmap_cb(self, msg):
+        self.costmap_msg = msg
+
+
+
 if __name__ == '__main__':
     try:
         rospy.init_node('oodometry', log_level=rospy.DEBUG)
         RFID_tag_reach = False
         smb = SergiMoveBase()
-        smb.set_goal(0, 1, 0)
-        while not RFID_tag_reach:
-            smb.next_move(smb.ant_calc())
-            RFID_tag_reach = smb.check_goal()
+        smb.set_goal(1, 0, 0)
+        # while not RFID_tag_reach:
+        smb.next_move(smb.ant_calc())
+        RFID_tag_reach = smb.check_goal()
+        print smb.costmap_msg
 
 
     except rospy.ROSInterruptException:
