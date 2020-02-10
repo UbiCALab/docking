@@ -1,26 +1,23 @@
 #!/usr/bin/env python
 
-from nav_msgs.msg import Odometry, OccupancyGrid
+from nav_msgs.msg import Odometry
 import rospy
 import tf
 from geometry_msgs.msg import Vector3Stamped, PointStamped, PoseStamped
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from tf.transformations import quaternion_from_euler
-from turtlebot_actions.msg import TurtlebotMoveAction, TurtlebotMoveGoal
 import numpy as np
 import math
 
 
-class SergiMoveBase:
+class navigate_back_to_base:
 
     def __init__(self):
         self.g = PointStamped()
         self.listener = tf.TransformListener()
         rospy.Subscriber('odom', Odometry, self.odometry_cb)
         self.odom_msg = Odometry()
-        rospy.Subscriber('move_base/local_costmap/costmap', OccupancyGrid, self.costmap_cb)
-        self.costmap_msg = OccupancyGrid()
         self.a1 = Vector3Stamped()
         self.a2 = Vector3Stamped()
         self.a3 = Vector3Stamped()
@@ -46,10 +43,8 @@ class SergiMoveBase:
         self.yaw = [0, np.pi / 2, np.pi, 3 * np.pi / 2]
         self.pose = PoseStamped()
         self.pose.header.frame_id = 'base_link'
-        self.rate = rospy.Rate(0.25)
-        self.sac_tb = actionlib.SimpleActionClient('turtlebot_move', TurtlebotMoveAction)
+        self.rate = rospy.Rate(1)
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.goal_tw = TurtlebotMoveGoal()
         self.goal_pose = MoveBaseGoal()
 
     def set_goal(self, x, y, z):
@@ -78,11 +73,6 @@ class SergiMoveBase:
         return i
 
     def next_move(self, i):
-        # self.sac_tb.wait_for_server()
-        # self.goal_tw.forward_distance = 0
-        # self.goal_tw.turn_distance = self.yaw[i]
-        # self.sac_tb.send_goal(self.goal_tw)
-
         quaternion = tf.transformations.quaternion_from_euler(0, 0, self.yaw[i])
         self.pose.pose.orientation.x = quaternion[0]
         self.pose.pose.orientation.y = quaternion[1]
@@ -99,10 +89,10 @@ class SergiMoveBase:
         self.pose.pose.orientation.x = 0
         self.pose.pose.orientation.y = 0
         self.pose.pose.orientation.z = 0
-        self.pose.pose.orientation.w = 0
+        self.pose.pose.orientation.w = 1
         self.pose.pose.position.y = 0
         self.pose.pose.position.z = 0
-        self.pose.pose.position.x = 0.5
+        self.pose.pose.position.x = 3
         self.listener.waitForTransform('odom', 'base_link', rospy.Time(0), rospy.Duration(5))
         self.goal_pose.target_pose = self.listener.transformPose('odom', self.pose)
         self.client.send_goal(self.goal_pose)
@@ -113,23 +103,16 @@ class SergiMoveBase:
                          ((self.g.point.y-self.odom_msg.pose.pose.position.y)**2)) < 0.2
         # return np.absolute(np.subtract(self.g.point, self.odom_msg.pose.pose.position)) < 0.5
 
-    def costmap_cb(self, msg):
-        self.costmap_msg = msg
-
-
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('oodometry', log_level=rospy.DEBUG)
+        rospy.init_node('nav_base', log_level=rospy.DEBUG)
         RFID_tag_reach = False
-        smb = SergiMoveBase()
-        smb.set_goal(1, 0, 0)
-        # while not RFID_tag_reach:
-        smb.next_move(smb.ant_calc())
-        RFID_tag_reach = smb.check_goal()
-        print smb.costmap_msg
-
+        nbb = navigate_back_to_base()
+        nbb.set_goal(-5, 5, 0)
+        while not RFID_tag_reach:
+            nbb.next_move(nbb.ant_calc())
+            RFID_tag_reach = nbb.check_goal()
 
     except rospy.ROSInterruptException:
         pass
-
