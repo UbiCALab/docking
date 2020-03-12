@@ -4,10 +4,13 @@
     <arg name="robot_ns"  default="$(env ROBOT_NS)"/>
     <arg name="tf_prefix"  default="$(env ROBOT_TF_PREFIX)"/>
     <group ns="$(arg robot_ns)">
-        <node pkg="sergi" type="docking_control.py" name="docking_control" output="screen"/>
+        <node pkg="ant_robot" type="rfid_interaction.py" name="rfid_interaction" output="screen">
+            <rosparam file="$(find ant_robot)/config/rfid_interaction.yaml" command="load" />
+        </node>
+        <node pkg="sergi" type="docking.py" name="docking" output="screen"/>
         <node pkg="sergi" type="Navigate_back_to_base_robot2.py" name="nav_to_base" output="screen">
             <rosparam file="$(find sergi)/config/rfid_config.yaml" command="load"/>
         </node>
-        <node pkg="sergi" type="Go_back_home.py" name="go_back_home" output="screen"/>
+        <node pkg="sergi" type="control.py" name="control" output="screen"/>
     </group>
 </launch>

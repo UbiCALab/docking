@@ -8,7 +8,7 @@ from actionlib_msgs.msg import GoalStatus
 from std_srvs.srv import Empty, SetBool
 
 
-class DockingControl:
+class Docking:
 
     def __init__(self):
         self.IR_sensor = False
@@ -83,8 +83,8 @@ class DockingControl:
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('docking_control', log_level=rospy.DEBUG)
-        dc = DockingControl()
+        rospy.init_node('docking', log_level=rospy.DEBUG)
+        dc = Docking()
         while True:
             if dc.IR_sensor & dc.start:
                 dc.srv_client.wait_for_service(10)

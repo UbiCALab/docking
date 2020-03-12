@@ -69,6 +69,12 @@ class NavigateBackToBase:
         self.time_between_readings = rospy.get_param('nav_to_base/time_between_readings')
         self.dock_srv = rospy.Service('start_docking_srv', Empty, self.cb_start_docking)
         self.nav_srv = rospy.Service('start_navigation_srv', SetBool, self.cb_start_navigation)
+        self.antenna_map = dict()
+        self.antenna_map['front'] = rospy.get_param('rfid_interaction/prod/antenna_port/front')
+        self.antenna_map['back'] = rospy.get_param('rfid_interaction/prod/antenna_port/back')
+        self.antenna_map['left'] = rospy.get_param('rfid_interaction/prod/antenna_port/left')
+        self.antenna_map['right'] = rospy.get_param('rfid_interaction/prod/antenna_port/right')
+        self.is_active_filtering = rospy.get_param('rfid_interaction/prod/active_filtering/is_active')
 
     def cb_global_plan(self, msg):
         if np.linalg.norm([msg.poses[-1].pose.position.x - msg.poses[0].pose.position.x,
@@ -126,6 +132,14 @@ class NavigateBackToBase:
             self.reading_average[1][rotated_port] += reading.rssi
         return self.weighted_selection()
 
+    # def angle_selection(self):
+    #     [ord(x) for x in self.reading_list]
+    #     self.reading_list.sort()
+
+    def port_transform(self, rotated_port):
+        ports = ['front', 'left', 'back', 'right']  # Port definition for calculations from robot poses
+        return self.antenna_map[ports[rotated_port]]
+
     def weighted_selection(self):
         self.reading_average[2][0] = self.reading_average[1][0] * self.reading_average[0][0]
         self.reading_average[2][1] = self.reading_average[1][1] * self.reading_average[0][1]
@@ -156,7 +170,7 @@ class NavigateBackToBase:
             self.port_rot = 3
         print("\nantenna_port: " + str(reading.antenna_port) + "   port_rotation: " + str(self.port_rot) +
               "   final_antenna_port: " + str((reading.antenna_port + self.port_rot) % self.n_antennas))
-        return (reading.antenna_port + self.port_rot) % self.n_antennas
+        return self.port_transform((reading.antenna_port + self.port_rot) % self.n_antennas)
 
     def go_back_home(self):
         odom = self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
