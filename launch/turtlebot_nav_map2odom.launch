@@ -6,7 +6,7 @@
 <!--  <arg name="tf_prefix"         default="R2D2TF"/>-->
 
 <!--  <group ns="$(arg robot_ns)">-->
-     <include file="$(find sergi)/launch/tutti_frutti.launch" >
+     <include file="$(find sergi)/launch/nav_stack.launch" >
 <!--       <param name="tf_prefix" value="$(arg tf_prefix)"/>-->
 <!--       <arg name="robot_namespace"  value="$(arg robot_ns)" />-->
        <arg name="simulation" value="false"/>

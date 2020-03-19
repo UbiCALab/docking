@@ -1,0 +1,9 @@
+#Define the goal
+float64 x
+float64 y
+---
+#Define the result
+bool done
+---
+#Define a feedback message
+int32 distance_to_base
