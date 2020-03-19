@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+        <node pkg="sergi" type="Epc_publisher.py" name="RFIDrx" output="screen">
+            <rosparam file="$(find sergi)/config/rfid_config.yaml" command="load" />
+        </node>
+        <node pkg="sergi" type="Navigate_back_to_base.py" name="nav_to_base" output="screen">
+            <rosparam file="$(find sergi)/config/rfid_config.yaml" command="load" />
+        </node>
+</launch>

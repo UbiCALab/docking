@@ -28,13 +28,6 @@
     <rosparam file="$(find sergi_navigation)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find sergi_navigation)/param/local_costmap_params.yaml" command="load"/>
     <rosparam file="$(find sergi_navigation)/param/global_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find sergi_navigation)/param/recovery_params.yaml" command="load" />
-    <!--param name="DWAPlannerROS/global_frame_id" value="$(arg robot_namespace)_tf/odom"/>
-    <param name="global_costmap/global_frame" value="$(arg robot_namespace)_tf/odom"/>
-    <param name="global_costmap/obstacle_layer/cam/sensor_frame" value="$(arg robot_namespace)_tf/camera_depth_frame"/>
-    <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint"/>
-    <param name="local_costmap/global_frame" value="$(arg robot_namespace)_tf/odom"/>
-    <param name="local_costmap/obstacle_layer/cam/sensor_frame" value="$(arg robot_namespace)_tf/camera_depth_frame"/>
-    <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)_tf/base_footprint"/-->
+
   </node>
 </launch>
