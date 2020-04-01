@@ -89,8 +89,8 @@ class NavigateBackToBase:
         return True, ''
 
     def cb_start_docking(self, msg):
-        self.DS_found = True
-        self.client.cancel_all_goals()
+        # self.DS_found = True
+        # self.client.cancel_all_goals()
         return EmptyResponse()
 
     def base_link_to_odom_transfrom(self, pose):
