@@ -31,8 +31,8 @@ class Docking:
         if not rospy.is_shutdown():
             self.dock_ir = [ord(x) for x in msg.data]
             # print("INFRA RED MESSAGE: " + str(self.dock_ir))
-            # if self.dock_ir[0] + self.dock_ir[1] + self.dock_ir[2] != 0:
-            #     self.IR_sensor = True
+            if self.dock_ir[0] + self.dock_ir[1] + self.dock_ir[2] != 0:
+                self.IR_sensor = True
 
     def doneCb(self, status, result):
         if 0:
