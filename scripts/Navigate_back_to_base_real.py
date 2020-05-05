@@ -22,7 +22,7 @@ def quaternion_to_list(quaternion):
     return [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
 
 
-def def_pose(position, quaternion, frame_id="robot1_tf/base_link"):
+def def_pose(position, quaternion, frame_id="robot2_tf/base_link"):
     pose = PoseStamped()
     pose.header.frame_id = frame_id
     pose.pose.orientation.x = quaternion[0]
@@ -47,7 +47,7 @@ class HomeTagReading:
 class NavigateBackToBase:
 
     def __init__(self):
-        # self.namespace = rospy.get_namespace().strip('/').time = rospy.Time.to_sec(rospy.Time.now())
+        # self.namespace = rospy.get_namespace().strip('/')
         self.reading_list = []
         self.reading_average = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.listener = tf.TransformListener()
@@ -56,12 +56,13 @@ class NavigateBackToBase:
         self.DS_found = False
         self.time = rospy.Time.to_sec(rospy.Time.now())
         self.msgs_full = False
+        self.first_tag_read = False
         self.port_rot = 0
         self.goal_pose = MoveBaseGoal()
-        self.tf_prefix = rospy.get_param('/tf_prefix', 'robot1_tf/')
+        self.tf_prefix = rospy.get_param('tf_prefix') + '/'  # , 'robot2_tf')
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.rfid_node_name = 'rfid_interaction/'
-        self.sub_RFID = rospy.Subscriber(self.rfid_node_name + 'epcs', EpcInfo, self.rfid_cb)
+        self.sub_RFID = rospy.Subscriber(self.rfid_node_name + 'epcs', EpcInfo, self.cb_rfid_readings)
         self.sub_global = rospy.Subscriber('move_base/DWAPlannerROS/global_plan', Path, self.cb_global_plan)
         self.base1_epc = rospy.get_param('nav_to_base/base1')
         self.samples = rospy.get_param('nav_to_base/samples')
@@ -89,9 +90,20 @@ class NavigateBackToBase:
         return True, ''
 
     def cb_start_docking(self, msg):
-        # self.DS_found = True
-        # self.client.cancel_all_goals()
+        self.DS_found = True
+        self.client.cancel_all_goals()
         return EmptyResponse()
+
+    def cb_rfid_readings(self, msg):
+        if self.base1_epc == msg.epc:  # Update reads decision matrix
+            self.time = rospy.Time.to_sec(rospy.Time.now())
+            self.reading_list.append(HomeTagReading(msg.antenna_port - 1, 10 ** ((msg.RSSI - 30) / 10),
+                                                    self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
+                                                    .pose.orientation, rospy.Time.to_sec(rospy.Time.now())))
+            if len(self.reading_list) >= self.samples:
+                self.msgs_full = True  # stop averaging
+            rospy.logdebug("stack size: " + str(len(self.reading_list)) + "    port: " + str(msg.antenna_port - 1) +
+                           "    RSSI: " + str(10 ** ((msg.RSSI - 30) / 10)))
 
     def base_link_to_odom_transfrom(self, pose):
         self.listener.waitForTransform(self.tf_prefix + 'odom', self.tf_prefix + 'base_link', rospy.Time(0),
@@ -113,17 +125,6 @@ class NavigateBackToBase:
         self.send_goal(self.base_link_to_odom_transfrom(def_pose([0, 0, 0], quaternion)))
         if not self.DS_found:
             self.send_goal(self.base_link_to_odom_transfrom(def_pose([1, 0, 0], [0, 0, 0, 1])))
-
-    def rfid_cb(self, msg):
-        if self.base1_epc == msg.epc:  # Update reads decision matrix
-            self.time = rospy.Time.to_sec(rospy.Time.now())
-            self.reading_list.append(HomeTagReading(msg.antenna_port - 1, 10 ** ((msg.RSSI - 30) / 10),
-                                                    self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
-                                                    .pose.orientation, rospy.Time.to_sec(rospy.Time.now())))
-            if len(self.reading_list) >= self.samples:
-                self.msgs_full = True  # stop averaging
-            rospy.logdebug("stack size: " + str(len(self.reading_list)) + "    port: " + str(msg.antenna_port - 1) +
-                           "    RSSI: " + str(10 ** ((msg.RSSI - 30) / 10)))
 
     def antenna_decision(self):
         for reading in self.reading_list:  # for reading in self.reading_list[-self.samples:]:
@@ -188,12 +189,13 @@ if __name__ == '__main__':
                 if nbb.msgs_full:
                     nbb.msgs_full = False
                     nbb.full_movement("NORMAL BEHAVIOR")
-                if (rospy.Time.to_sec(rospy.Time.now()) > nbb.time +
-                        rospy.Time.to_sec(rospy.Time(nbb.time_between_readings))):
-                    if len(nbb.reading_list) == 0:
-                        nbb.go_back_home()
-                    else:
-                        nbb.full_movement("1st RECOVERY!!!")
+                if nbb.first_tag_read:
+                    if (rospy.Time.to_sec(rospy.Time.now()) > nbb.time +
+                            rospy.Time.to_sec(rospy.Time(nbb.time_between_readings))):
+                        if len(nbb.reading_list) == 0:
+                            nbb.go_back_home()
+                        else:
+                            nbb.full_movement("1st RECOVERY!!!")
             rospy.sleep(1)
     except rospy.ROSInterruptException:
         pass

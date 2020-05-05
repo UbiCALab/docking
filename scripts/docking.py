@@ -62,7 +62,8 @@ class Docking:
         self.IR_sensor = False
 
     def activeCb(self):
-        if 0: print 'Action server went active.'
+        if 0:
+            print 'Action server went active.'
 
     def feedbackCb(self, feedback):
         # Print state of dock_drive module (or node.)
@@ -71,7 +72,8 @@ class Docking:
     def dock_drive_client(self):
         # add timeout setting
         while not self.client.wait_for_server(rospy.Duration(5.0)):
-            if rospy.is_shutdown(): return
+            if rospy.is_shutdown():
+                return
             print 'Action server is not connected yet. still waiting...'
         self.client.send_goal(self.goal, self.doneCb, self.activeCb, self.feedbackCb)
         print 'Goal: Sent.'
