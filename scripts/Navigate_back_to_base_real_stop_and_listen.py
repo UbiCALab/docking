@@ -107,7 +107,7 @@ class NavigateBackToBase:
         if (self.base1_epc == msg.epc) & (not self.robot_moving):
             self.time = rospy.Time.to_sec(rospy.Time.now())
             self.reading_list.append(BaseTagReading(msg.antenna_port - 1, 10 ** ((msg.RSSI - 30) / 10),
-                                                    self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
+                                                    self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1],self.tf_prefix + "base_link"))
                                                     .pose.orientation, rospy.Time.to_sec(rospy.Time.now())))
             if len(self.reading_list) >= self.samples:
                 self.msgs_full = True  # stop averaging
@@ -159,7 +159,7 @@ class NavigateBackToBase:
 
     def port_rotation(self, reading):
         angular_difference = tf.transformations.euler_from_quaternion(quaternion_to_list(
-            self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1])).pose.orientation))[2] - \
+            self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1], self.tf_prefix + "base_link")).pose.orientation))[2] - \
                              tf.transformations.euler_from_quaternion(quaternion_to_list(reading.orientation))[2]
         # print("\nangular_difference: " + str(angular_difference) + "   final angle: " + str(tf.transformations.
         #     euler_from_quaternion(quaternion_to_list(self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
@@ -188,7 +188,7 @@ class NavigateBackToBase:
 
     def go_back_home(self):
         print("GOING BACK HOME\n")
-        odom = self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1]))
+        odom = self.base_link_to_odom_transfrom(def_pose([0, 0, 0], [0, 0, 0, 1], self.tf_prefix + "base_link"))
         v = [-odom.pose.position.x, -odom.pose.position.y, 0]
         self.send_goal(def_pose([odom.pose.position.x, odom.pose.position.y, odom.pose.position.z] +
                                 v / np.linalg.norm(v), [0, 0, 0, 1], self.tf_prefix + "odom"), "going back home")
