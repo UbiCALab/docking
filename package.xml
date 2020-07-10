@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sergi</name>
+  <name>docking</name>
   <version>0.0.0</version>
-  <description>The first_package package</description>
-<maintainer email="danish@todo.todo">danish</maintainer>
+  <description>Docking for the Antrobot200</description>
+<maintainer email="sergio.lopez@upf.edu">spanish</maintainer>
 
 
  <license>TODO</license>
