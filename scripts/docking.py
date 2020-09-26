@@ -95,4 +95,4 @@ if __name__ == '__main__':
                 print("STATE:       " + str(dc.client.get_state()))
 
     except rospy.ROSInterruptException:
-        print "program interrupted before completion"
+        print "start_docking_srv not responding"
